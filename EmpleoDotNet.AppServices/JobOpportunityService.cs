@@ -3,7 +3,6 @@ using System.Linq;
 using EmpleoDotNet.Core.Domain;
 using EmpleoDotNet.Core.Dto;
 using EmpleoDotNet.Repository.Contracts;
-using EmpleoDotNet.AppServices.ViewModel;
 using PagedList;
 
 namespace EmpleoDotNet.AppServices
@@ -41,6 +40,11 @@ namespace EmpleoDotNet.AppServices
 
             item.ViewCount++;
             _jobOpportunityRepository.SaveChanges();           
+        }
+
+        public List<JobCategoryCountDto> GetMainJobCategoriesCount()
+        {
+            return _jobOpportunityRepository.GetMainJobCategoriesCount();
         }
 
 

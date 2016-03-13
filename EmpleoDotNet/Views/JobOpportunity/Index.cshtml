@@ -1,9 +1,34 @@
-﻿@using EmpleoDotNet.Helpers
-@using PagedList.Mvc
-
+﻿@using PagedList.Mvc
 @model EmpleoDotNet.ViewModel.JobOpportunitySearchViewModel
+
 @{
     ViewBag.Title = "Listado de Empleos";
+}
+
+@* This added here because the partial view _FindsJobPartinal need this JS to work :( *@
+@section scripts {
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
+    <script type="text/javascript">
+
+        google.maps.event.addDomListener(window, 'load', function () {
+            var places = new google.maps.places.Autocomplete(document.getElementById('location-input'));
+            google.maps.event.addListener(places, 'place_changed', function () {
+                var place = places.getPlace();
+                if (place) {
+                    var placeId = place.place_id;
+                    var latitude = place.geometry.location.lat();
+                    var longitude = place.geometry.location.lng();
+
+                    $('#location-placeid').val(placeId);
+                    $('#location-latitude').val(latitude);
+                    $('#location-longitude').val(longitude);
+                } else {
+                    $('#location-input').val('');
+                    $('#location-placeid').val('');
+                }
+            });
+        });
+    </script>
 }
 
 @Html.Partial("_FindJobsPartial", Model)
@@ -11,92 +36,38 @@
 <div class="container">
     <div class="row">
         <div class="col-sm-12 col-md-12 col-lg-12">
-            @if (!Model.Result.Any() && (!string.IsNullOrWhiteSpace(Model.Keyword) || Model.SelectedLocation > 0))
+            @if (Model.Result == null || !Model.Result.Any())
             {
-            <div>
-                <h5>No se encontraron resultados para esta búsqueda.</h5>
-                <hr />
-            </div>
+                <div>
+                    <h5>No se encontraron resultados para esta búsqueda.</h5>
+                    <hr/>
+                </div>
             }
             else
             {
-            @*Pagination*@
-            if (@Model.Result.PageCount > 1)
-            {
-            @Html.PagedListPager(Model.Result, page => Url.Action("Index", new
-            {
-            Model.SelectedLocation,
-            page,
-            Model.Result.PageSize
-            }));
-            }
-            <div>
-                <h5>@Model.Result.TotalItemCount Empleos disponibles para esta búsqueda.</h5>
-                <br />
-            </div>
+                <div>
+                    <h5>@Model.Result.TotalItemCount Empleo(s) disponibles para esta búsqueda.</h5>
+                </div>
 
-            <div class="jobs">
-                @foreach (var jobOpportunity in Model.Result)
+                <br />
+
+                @Html.Partial("_JobListPartial", Model.Result)
+
+                <br />
+
+                @*Pagination*@
+                if (Model.Result.PageCount > 1)
                 {
-                <a href="@Url.Action("Detail", "JobOpportunity" , new {id=jobOpportunity.Id})" class="featured" target="_blank">
-                    <div class="row">
-                        <div class="col-md-1 hidden-sm hidden-xs text-center">
-                            @if (!string.IsNullOrEmpty(jobOpportunity.CompanyLogoUrl))
-                            {
-                            <img src="@jobOpportunity.CompanyLogoUrl"
-                                 width="60"
-                                 height="60"
-                                 alt=""
-                                 class="img-responsive"
-                                 onclick="onJobOpportunityDetailClick(this);"
-                                 data-url="@Url.Action(" Detail", "JobOpportunity" , new { id=jobOpportunity.Id })" />
-                            }
-                            else
-                            {
-                            <h5 class="company-text-logo !important">@Html.FirstTwoLetters(jobOpportunity.CompanyName)</h5>
-                            }
-                        </div>
-                        <div class="col-lg-5 col-md-5 col-sm-7 col-xs-12 job-title">
-                            <h5>@jobOpportunity.Title</h5>
-                            <p><strong>@jobOpportunity.CompanyName</strong> | @jobOpportunity.CompanyEmail</p>
-                        </div>
-                        <div class="col-lg-3 col-md-3 col-sm-4 col-xs-12 job-location">
-                            <p>
-                                <strong>@jobOpportunity.Location.Name</strong>
-                            </p>
-                            <p class="hidden-xs">@jobOpportunity.Created.ToShortDateString()</p>
-                        </div>
-                        <div class="pull-left col-lg-2 col-md-2 hidden-sm hidden-xs job-type text-center">
-                            @if (jobOpportunity.IsRemote)
-                            {
-                            <p class="badge full-time">
-                                Remoto
-                            </p>
-                            <br />
-                            }
-                            <p class="badge">@jobOpportunity.Category.ToEnumDescription()</p>
-                            <p>Visitas | @jobOpportunity.ViewCount</p>
-                        </div>
-                    </div>
-                </a>
+                   @Html.PagedListPager(Model.Result, page => Url.Action("Index", new
+                    {
+                       Model.SelectedLocationName,
+                       Model.SelectedLocationLatitude,
+                       Model.SelectedLocationLongitude,
+                       Model.SelectedLocationPlaceId,
+                       page,
+                       Model.Result.PageSize
+                   }))
                 }
-            </div>
-            <br />
-            <div>
-                <h5>@Model.Result.TotalItemCount Empleos disponibles para esta búsqueda.</h5>
-                <br />
-            </div>
-
-            @*Pagination*@
-            if (@Model.Result.PageCount > 1)
-            {
-            @Html.PagedListPager(Model.Result, page => Url.Action("Index", new
-            {
-            Model.SelectedLocation,
-            page,
-            Model.Result.PageSize
-            }));
-            }
             }
         </div>
     </div>

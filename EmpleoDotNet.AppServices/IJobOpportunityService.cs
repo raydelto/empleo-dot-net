@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using EmpleoDotNet.Core.Domain;
 using EmpleoDotNet.Core.Dto;
-using EmpleoDotNet.AppServices.ViewModel;
 using PagedList;
 
 namespace EmpleoDotNet.AppServices
@@ -13,5 +12,6 @@ namespace EmpleoDotNet.AppServices
         IPagedList<JobOpportunity> GetAllJobOpportunitiesPagedByFilters(JobOpportunityPagingParameter parameter);
         JobOpportunity GetJobOpportunityById(int? id);
         void UpdateViewCount(int id);
+        List<JobCategoryCountDto> GetMainJobCategoriesCount();
     }
 }
